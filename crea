@@ -1,0 +1,120 @@
+<?php
+
+$params =  $_SERVER['argv']; //isset($_SERVER['argv']) ? $_SERVER['argv'] : $params;
+$umm = new Umm();
+
+//Check if null $param[1]
+isset($params[1]) ? $params[1] : $params[1] = '--help';
+
+switch ($params[1])
+{
+    case '--web':
+        echo $umm->createWEB($params[2]);
+        break;
+
+    case '--remove':
+        echo $umm->removeWeb($params[2]);
+        break;
+
+    case '--help':
+        echo $umm->help();
+        break;
+
+    default:
+        echo $umm->help();
+
+}
+
+
+
+
+/***************clase ayuda*************************/
+class Umm
+{
+
+    private $hosts = "/etc/hosts";
+    private $server_directory = '/var/www/';
+    private $sites_avaible = '/etc/apache2/sites-available/';
+
+
+
+    //Crea el host en la ruta de hosts
+    public function createHost($host_name)
+    {
+        system("echo  127.0.0.1 \t".$host_name.' >> '.$this->hosts);
+    }
+
+    //Carpeta en directorio servidor
+    public function creaCarpeta($host_name)
+    {
+        system("mkdir $this->server_directory$host_name");
+        system("echo \<h1\> http://$host_name \</h1\>  > $this->server_directory$host_name".'/index.php');
+        system("chmod 775 $this->server_directory$host_name");
+    }
+
+    //Crea un virtual host apache
+    private function createNewVirtualHost($host_name)
+    {
+        $virtual_host2 =
+        '\<VirtualHost *:80\> "\n "'.
+        '"\t" \ServerName '.$host_name.' "\n"'.
+        '"\t" \ServerAlias www.'.$host_name.' "\n"'.
+        '"\t" \DocumentRoot /var/www/'.$host_name.' "\n"'.
+        '"\t" \ErrorLog \${APACHE_LOG_DIR}/'.$host_name.'_error.log "\n"'.
+        '"\t" \CustomLog \${APACHE_LOG_DIR}/'.$host_name.'_acce.log combined "\n"'.
+        '\</VirtualHost\>';
+
+
+        system("echo $virtual_host2 > $this->sites_avaible$host_name.conf");
+    }
+
+    //Activa configuracion de Apache2
+    private function activaConfigApache($host_name)
+    {
+        system("a2ensite $host_name.conf");
+        system('service apache2 restart');
+        system("xdg-open http://$host_name");
+    }
+
+    //Execut a create web params
+    public function createWEB($web)
+    {
+        $this->createHost($web);
+        $this->creaCarpeta($web);
+        $this->createNewVirtualHost($web);
+        $this->activaConfigApache($web);
+    }
+
+    //Remove a created web
+    public function removeWeb($web_name)
+    {
+
+        system("a2dissite $web_name");
+        system("rm -R $this->server_directory$web_name");
+        system("rm $this->sites_avaible$web_name.conf");
+        system("sed -i '/$web_name/d' /etc/hosts");
+
+        system('service apache2 restart');
+    }
+
+    //Help manual
+    public function help()
+    {
+        $help =
+            '#Create a new web '."\n".
+            "\t".'php crea --web [webname.com]'."\n \n".
+
+            '#Remove created web '."\n".
+            "\t".'php crea --remove [webname.com]'."\n \n".
+
+            '#Help manual '."\n".
+            "\t".'php crea --help '."\n \n";
+
+        return $help;
+    }
+
+
+}
+?>
+
+
