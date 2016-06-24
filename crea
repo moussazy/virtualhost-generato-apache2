@@ -45,11 +45,11 @@ class Umm
     }
 
     //Carpeta en directorio servidor
-    public function creaCarpeta($host_name)
+    public function creaCarpeta($directori_name)
     {
-        system("mkdir $this->server_directory$host_name");
-        system("echo \<h1\> http://$host_name \</h1\>  > $this->server_directory$host_name".'/index.php');
-        system("chmod 775 $this->server_directory$host_name");
+        system("mkdir $this->server_directory$directori_name");
+        system("echo \<h1\> http://$directori_name \</h1\>  > $this->server_directory$directori_name".'/index.php');
+        system("chmod 775 $this->server_directory$directori_name");
     }
 
     //Crea un virtual host apache
@@ -77,12 +77,12 @@ class Umm
     }
 
     //Execut a create web params
-    public function createWEB($web)
+    public function createWEB($web_name)
     {
-        $this->createHost($web);
-        $this->creaCarpeta($web);
-        $this->createNewVirtualHost($web);
-        $this->activaConfigApache($web);
+        $this->createHost($web_name);
+        $this->creaCarpeta($web_name);
+        $this->createNewVirtualHost($web_name);
+        $this->activaConfigApache($web_name);
     }
 
     //Remove a created web
