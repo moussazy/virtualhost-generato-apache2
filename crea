@@ -1,5 +1,7 @@
 <?php
 
+/*Creado por Moussa Tahrioui para agilizar el trabajo*/
+
 $params =  $_SERVER['argv']; //isset($_SERVER['argv']) ? $_SERVER['argv'] : $params;
 $umm = new Umm();
 
