@@ -1,3 +1,4 @@
+#!/usr/bin/env php
 <?php
 
 /*Creado por Moussa Tahrioui para agilizar el trabajo*/
@@ -43,6 +44,7 @@ class Umm
     private $server_directory = '/var/www/';
     private $sites_avaible = '/etc/apache2/sites-available/';
     private $logs_directory = '/var/log/apache2/';
+    private $directory_permision = '777';
 
 
 
@@ -56,21 +58,22 @@ class Umm
     private function creaCarpeta($directori_name)
     {
         system("mkdir $this->server_directory$directori_name");
-        system("echo \<h1\> http://$directori_name \</h1\>  > $this->server_directory$directori_name".'/index.php');
-        system("chmod 775 $this->server_directory$directori_name");
+        system("mkdir $this->server_directory$directori_name/public");
+        //system("echo \<h1\> http://$directori_name \</h1\>  > $this->server_directory$directori_name".'/index.php');
+        system("chmod $this->directory_permision $this->server_directory$directori_name -R");
     }
 
     //Crea un virtual host apache
     private function createNewVirtualHost($host_name)
     {
         $virtual_host2 =
-        '\<VirtualHost *:80\> "\n "'.
-        '"\t" \ServerName '.$host_name.' "\n"'.
-        '"\t" \ServerAlias www.'.$host_name.' "\n"'.
-        '"\t" \DocumentRoot /var/www/'.$host_name.' "\n"'.
-        '"\t" \ErrorLog \${APACHE_LOG_DIR}/'.$host_name.'_error.log "\n"'.
-        '"\t" \CustomLog \${APACHE_LOG_DIR}/'.$host_name.'_acce.log combined "\n"'.
-        '\</VirtualHost\>';
+            '\<VirtualHost *:80\> "\n "'.
+            '"\t" \ServerName '.$host_name.' "\n"'.
+            '"\t" \ServerAlias www.'.$host_name.' "\n"'.
+            '"\t" \DocumentRoot /var/www/'.$host_name.'/public "\n"'.
+            '"\t" \ErrorLog \${APACHE_LOG_DIR}/'.$host_name.'_error.log "\n"'.
+            '"\t" \CustomLog \${APACHE_LOG_DIR}/'.$host_name.'_acce.log combined "\n"'.
+            '\</VirtualHost\>';
 
 
         system("echo $virtual_host2 > $this->sites_avaible$host_name.conf");
@@ -81,7 +84,7 @@ class Umm
     {
         system("a2ensite $host_name.conf");
         system('service apache2 restart');
-        system("xdg-open http://$host_name");
+        //system("xdg-open http://$host_name");
     }
 
     //Execut a create web params
@@ -91,6 +94,7 @@ class Umm
         $this->creaCarpeta($web_name);
         $this->createNewVirtualHost($web_name);
         $this->activaConfigApache($web_name);
+        return "Domain http://http://$web_name created!";
     }
 
     //Remove a created web
@@ -166,5 +170,4 @@ class Laravel
 
 }
 ?>
-
 
