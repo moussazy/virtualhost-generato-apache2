@@ -16,6 +16,10 @@ switch ($params[1])
         echo $umm->createWEB($params[2]);
         break;
 
+    case '--host':
+        echo $umm->createOlnyHost($params[2]);
+        break;
+
     case '--laravel':
         echo $laravel->createProjectLaravel($params[2]);
         break;
@@ -92,6 +96,16 @@ class Umm
     {
         $this->createHost($web_name);
         $this->creaCarpeta($web_name);
+        $this->createNewVirtualHost($web_name);
+        $this->activaConfigApache($web_name);
+        return "Domain http://http://$web_name created!";
+    }
+
+    //Execut a create host params
+    public function createOlnyHost($web_name)
+    {
+        $this->createHost($web_name);
+        #$this->creaCarpeta($web_name);
         $this->createNewVirtualHost($web_name);
         $this->activaConfigApache($web_name);
         return "Domain http://http://$web_name created!";
