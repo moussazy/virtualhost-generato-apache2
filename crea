@@ -1,7 +1,7 @@
 #!/usr/bin/env php
 <?php
 
-/*Creado por Moussa Tahrioui para agilizar el trabajo*/
+/*Creado por Moussa Tahrioui para agilizar el trabajo, generando Virtual host de apache2 por un único comando en Ubuntu y derivadas*/
 
 $params =  $_SERVER['argv']; //isset($_SERVER['argv']) ? $_SERVER['argv'] : $params;
 $umm = new Umm();
@@ -26,10 +26,6 @@ switch ($params[1])
 
     case '--remove':
         echo $umm->removeWeb($params[2]);
-        break;
-
-    case '--help':
-        echo $umm->help();
         break;
 
     default:
@@ -182,6 +178,16 @@ class Laravel
         return ("composer create-project --prefer-dist laravel/laravel $web_name");
     }
 
+}
+
+//TODO, check if Ubuntu family and retur
+class LinuxDestribution {
+    /**
+    *@return boolean
+    */
+    public function getLinuxDistribution(){
+        $res = shell_exec('cat /etc/*-release');
+    }
 }
 ?>
 
