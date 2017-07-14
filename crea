@@ -94,7 +94,7 @@ class Umm
         $this->creaCarpeta($web_name);
         $this->createNewVirtualHost($web_name);
         $this->activaConfigApache($web_name);
-        return "Domain http://http://$web_name created!";
+        return "Virtual Host http://$web_name created!";
     }
 
     //Execut a create host params
@@ -104,7 +104,7 @@ class Umm
         #$this->creaCarpeta($web_name);
         $this->createNewVirtualHost($web_name);
         $this->activaConfigApache($web_name);
-        return "Domain http://http://$web_name created!";
+        return "Virtual Host http://$web_name created!";
     }
 
     //Remove a created web
