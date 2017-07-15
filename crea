@@ -1,193 +1,194 @@
 #!/usr/bin/env php
-<?php
+#No tabular primera linia para autodetectar php
+    <?php
 
-/*Creado por Moussa Tahrioui para agilizar el trabajo, generando Virtual host de apache2 por un único comando en Ubuntu y derivadas*/
+    /*Creado por Moussa Tahrioui para agilizar el trabajo, generando Virtual host de apache2 por un único comando en Ubuntu y derivadas*/
 
-$params =  $_SERVER['argv']; //isset($_SERVER['argv']) ? $_SERVER['argv'] : $params;
-$umm = new Umm();
-$laravel = new Laravel();
+    $params =  $_SERVER['argv']; //isset($_SERVER['argv']) ? $_SERVER['argv'] : $params;
+    $umm = new Umm();
+    $laravel = new Laravel();
 
-//Check if null $param[1]
-isset($params[1]) ? $params[1] : $params[1] = '--help';
+    //Check if null $param[1]
+    isset($params[1]) ? $params[1] : $params[1] = '--help';
 
-switch ($params[1])
-{
-    case '--web':
-        echo $umm->createWEB($params[2]);
-        break;
-
-    case '--host':
-        echo $umm->createOlnyHost($params[2]);
-        break;
-
-    case '--laravel':
-        echo $laravel->createProjectLaravel($params[2]);
-        break;
-
-    case '--remove':
-        echo $umm->removeWeb($params[2]);
-        break;
-
-    default:
-        echo $umm->help();
-
-}
-
-
-
-
-/***************clase ayuda*************************/
-class Umm
-{
-
-    private $hosts = "/etc/hosts";
-    private $server_directory = '/var/www/';
-    private $sites_avaible = '/etc/apache2/sites-available/';
-    private $logs_directory = '/var/log/apache2/';
-    private $directory_permision = '777';
-
-
-
-    //Crea el host en la ruta de hosts
-    private function createHost($host_name)
+    switch ($params[1])
     {
-        system("echo  127.0.0.1 \t".$host_name.' >> '.$this->hosts);
+        case '--web':
+            echo $umm->createWEB($params[2]);
+            break;
+
+        case '--host':
+            echo $umm->createOlnyHost($params[2]);
+            break;
+
+        case '--laravel':
+            echo $laravel->createProjectLaravel($params[2]);
+            break;
+
+        case '--remove':
+                echo $umm->removeWeb($params[2]);
+                break;
+
+        default:
+            echo $umm->help();
+
     }
 
-    //Carpeta en directorio servidor
-    private function creaCarpeta($directori_name)
+
+
+
+    /***************clase ayuda*************************/
+    class Umm
     {
-        system("mkdir $this->server_directory$directori_name");
-        system("mkdir $this->server_directory$directori_name/public");
-        //system("echo \<h1\> http://$directori_name \</h1\>  > $this->server_directory$directori_name".'/index.php');
-        system("chmod $this->directory_permision $this->server_directory$directori_name -R");
+
+        private $hosts = "/etc/hosts";
+        private $server_directory = '/var/www/';
+        private $sites_avaible = '/etc/apache2/sites-available/';
+        private $logs_directory = '/var/log/apache2/';
+        private $directory_permision = '777';
+
+
+
+        //Crea el host en la ruta de hosts
+        private function createHost($host_name)
+        {
+            system("echo  127.0.0.1 \t".$host_name.' >> '.$this->hosts);
+        }
+
+        //Carpeta en directorio servidor
+        private function creaCarpeta($directori_name)
+        {
+            system("mkdir $this->server_directory$directori_name");
+            system("mkdir $this->server_directory$directori_name/public");
+            //system("echo \<h1\> http://$directori_name \</h1\>  > $this->server_directory$directori_name".'/index.php');
+            system("chmod $this->directory_permision $this->server_directory$directori_name -R");
+        }
+
+        //Crea un virtual host apache
+        private function createNewVirtualHost($host_name)
+        {
+            $virtual_host2 =
+                '\<VirtualHost *:80\> "\n "'.
+                '"\t" \ServerName '.$host_name.' "\n"'.
+                '"\t" \ServerAlias www.'.$host_name.' "\n"'.
+                '"\t" \DocumentRoot /var/www/'.$host_name.'/public "\n"'.
+                '"\t" \ErrorLog \${APACHE_LOG_DIR}/'.$host_name.'_error.log "\n"'.
+                '"\t" \CustomLog \${APACHE_LOG_DIR}/'.$host_name.'_acce.log combined "\n"'.
+                '\</VirtualHost\>';
+
+
+            system("echo $virtual_host2 > $this->sites_avaible$host_name.conf");
+        }
+
+        //Activa configuracion de Apache2
+        private function activaConfigApache($host_name)
+        {
+            system("a2ensite $host_name.conf");
+            system('service apache2 restart');
+            //system("xdg-open http://$host_name");
+        }
+
+        //Execut a create web params
+        public function createWEB($web_name)
+        {
+            $this->createHost($web_name);
+            $this->creaCarpeta($web_name);
+            $this->createNewVirtualHost($web_name);
+            $this->activaConfigApache($web_name);
+            return "Virtual Host http://$web_name created!";
+        }
+
+        //Execut a create host params
+        public function createOlnyHost($web_name)
+        {
+            $this->createHost($web_name);
+            #$this->creaCarpeta($web_name);
+            $this->createNewVirtualHost($web_name);
+            $this->activaConfigApache($web_name);
+            return "Virtual Host http://$web_name created!";
+        }
+
+        //Remove a created web
+        public function removeWeb($web_name)
+        {
+            //a2dissite site apache
+            system("a2dissite $web_name");
+
+            //Remove a access_log and error_log
+            system("rm $this->logs_directory$web_name"."_error.log");
+            system("rm $this->logs_directory$web_name"."_acce.log");
+
+
+            //Remove a directory into /var/wwww
+            system("rm -R $this->server_directory$web_name");
+
+            //Remove a config file en site-avaible
+            system("rm $this->sites_avaible$web_name.conf");
+
+            //delete a line in /etc/hosts
+            system("sed -i '/$web_name/d' /etc/hosts");
+
+
+            system('service apache2 restart');
+        }
+
+        //Help manual
+        public function help()
+        {
+            $help =
+                '#Create a new web '."\n".
+                "\t".'php crea --web [webname.com]'."\n \n".
+
+                '#Create a new web Laravel freamwork'."\n".
+                "\t".'php crea --laravel [webname.com]'."\n \n".
+
+                '#Remove created web '."\n".
+                "\t".'php crea --remove [webname.com]'."\n \n".
+
+                '#Help manual '."\n".
+                "\t".'php crea --help '."\n \n";
+
+            return $help;
+        }
+
+
     }
 
-    //Crea un virtual host apache
-    private function createNewVirtualHost($host_name)
+    /*****************Class para Laravel ****************************/
+    class Laravel
     {
-        $virtual_host2 =
-            '\<VirtualHost *:80\> "\n "'.
-            '"\t" \ServerName '.$host_name.' "\n"'.
-            '"\t" \ServerAlias www.'.$host_name.' "\n"'.
-            '"\t" \DocumentRoot /var/www/'.$host_name.'/public "\n"'.
-            '"\t" \ErrorLog \${APACHE_LOG_DIR}/'.$host_name.'_error.log "\n"'.
-            '"\t" \CustomLog \${APACHE_LOG_DIR}/'.$host_name.'_acce.log combined "\n"'.
-            '\</VirtualHost\>';
+
+        private $project_name = "";
+        private $class_umm = null;
+
+        public function __construct()
+        {
+            $this->class_umm = new Umm();
+        }
 
 
-        system("echo $virtual_host2 > $this->sites_avaible$host_name.conf");
+        private function getLaravel()
+        {
+            system("composer create-project --prefer-dist laravel/laravel $this->project_name");
+        }
+
+        public function createProjectLaravel($web_name)
+        {
+            system('echo Remember change a directory of virtual host, add link to public direcroty '."\n");
+            //return $this->getLaravel($web_name);
+            return ("composer create-project --prefer-dist laravel/laravel $web_name");
+        }
+
     }
 
-    //Activa configuracion de Apache2
-    private function activaConfigApache($host_name)
-    {
-        system("a2ensite $host_name.conf");
-        system('service apache2 restart');
-        //system("xdg-open http://$host_name");
+    //TODO, check if Ubuntu family and retur
+    class LinuxDestribution {
+        /**
+        *@return boolean
+        */
+        public function getLinuxDistribution(){
+            $res = shell_exec('cat /etc/*-release');
+        }
     }
-
-    //Execut a create web params
-    public function createWEB($web_name)
-    {
-        $this->createHost($web_name);
-        $this->creaCarpeta($web_name);
-        $this->createNewVirtualHost($web_name);
-        $this->activaConfigApache($web_name);
-        return "Virtual Host http://$web_name created!";
-    }
-
-    //Execut a create host params
-    public function createOlnyHost($web_name)
-    {
-        $this->createHost($web_name);
-        #$this->creaCarpeta($web_name);
-        $this->createNewVirtualHost($web_name);
-        $this->activaConfigApache($web_name);
-        return "Virtual Host http://$web_name created!";
-    }
-
-    //Remove a created web
-    public function removeWeb($web_name)
-    {
-        //a2dissite site apache
-        system("a2dissite $web_name");
-
-        //Remove a access_log and error_log
-        system("rm $this->logs_directory$web_name"."_error.log");
-        system("rm $this->logs_directory$web_name"."_acce.log");
-
-
-        //Remove a directory into /var/wwww
-        system("rm -R $this->server_directory$web_name");
-
-        //Remove a config file en site-avaible
-        system("rm $this->sites_avaible$web_name.conf");
-
-        //delete a line in /etc/hosts
-        system("sed -i '/$web_name/d' /etc/hosts");
-
-
-        system('service apache2 restart');
-    }
-
-    //Help manual
-    public function help()
-    {
-        $help =
-            '#Create a new web '."\n".
-            "\t".'php crea --web [webname.com]'."\n \n".
-
-            '#Create a new web Laravel freamwork'."\n".
-            "\t".'php crea --laravel [webname.com]'."\n \n".
-
-            '#Remove created web '."\n".
-            "\t".'php crea --remove [webname.com]'."\n \n".
-
-            '#Help manual '."\n".
-            "\t".'php crea --help '."\n \n";
-
-        return $help;
-    }
-
-
-}
-
-/*****************Class para Laravel ****************************/
-class Laravel
-{
-
-    private $project_name = "";
-    private $class_umm = null;
-
-    public function __construct()
-    {
-        $this->class_umm = new Umm();
-    }
-
-
-    private function getLaravel()
-    {
-        system("composer create-project --prefer-dist laravel/laravel $this->project_name");
-    }
-
-    public function createProjectLaravel($web_name)
-    {
-        system('echo Remember change a directory of virtual host, add link to public direcroty '."\n");
-        //return $this->getLaravel($web_name);
-        return ("composer create-project --prefer-dist laravel/laravel $web_name");
-    }
-
-}
-
-//TODO, check if Ubuntu family and retur
-class LinuxDestribution {
-    /**
-    *@return boolean
-    */
-    public function getLinuxDistribution(){
-        $res = shell_exec('cat /etc/*-release');
-    }
-}
-?>
+    ?>
 
