@@ -1,8 +1,10 @@
 #!/usr/bin/env php
-#No tabular primera linia para autodetectar php
     <?php
-
+    
+    /*No tabular primera linia para autodetectar php*/
     /*Creado por Moussa Tahrioui para agilizar el trabajo, generando Virtual host de apache2 por un único comando en Ubuntu y derivadas*/
+    system(" echo ' \t \n\n #----------------- Hello! crea PHP -----------------# \t  \n\n' ");
+    
 
     $params =  $_SERVER['argv']; //isset($_SERVER['argv']) ? $_SERVER['argv'] : $params;
     $umm = new Umm();
